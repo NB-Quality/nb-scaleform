@@ -16,7 +16,7 @@ scaleform.__tostring = function(self) return self.handle end
 scaleform.__call = function(t,...)
 	local tb = {...}
     if t.ishud then 
-        BeginScaleformScriptHudMovieMethod(t.handle,tb[1])
+        BeginScaleformScriptHudMovieMethod(t.name,tb[1])
     else 
         BeginScaleformMovieMethod(t.handle,tb[1])
     end 
@@ -61,11 +61,13 @@ end
 
 Scaleform.Request = function(name)
     local ishud = type(name) == "number"
+  
     local name = name 
     local handle = ishud and RequestScaleformScriptHudMovie(name) or RequestScaleformMovie(name)
     local timer = GetGameTimer() 
+    
     if ishud then 
-        while not HasScaleformScriptHudMovieLoaded(handle) and math.abs(GetTimeDifference(GetGameTimer(), timer)) < 5000 do 
+        while not HasScaleformScriptHudMovieLoaded(name) and math.abs(GetTimeDifference(GetGameTimer(), timer)) < 5000 do 
             Wait(50)
         end 
     else 
@@ -92,7 +94,7 @@ setmetatable(Scaleform,{__call=function(scaleform,name,drawinit,drawend) return 
 
 function scaleform:Close(cb)
     if self.ishud then 
-        RemoveScaleformScriptHudMovie(self.handle)
+        RemoveScaleformScriptHudMovie(self.name)
     else 
         SetScaleformMovieAsNoLongerNeeded(self.handle)
     end 
