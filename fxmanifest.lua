@@ -6,10 +6,6 @@ description ''
 repository ''
 
 shared_scripts {
-    '@nb-loop/nb-loop.lua',
     'nb-scaleform.lua'
 }
 
-dependencies {
-    'nb-loop'
-}
