@@ -1,31 +1,6 @@
 # nb-scaleform
 Lua extended Scaleform Wrapper. Can use extended functions if you using with [nb-loop](https://github.com/negbook/nb-loop) or just copy it into there as init
 
-## fxmainfest.lua
-```
-client_scripts {
-    "@nb-scaleform/nb-scaleform.lua",
-    ...
-}
-dependencies {
-    'nb-scaleform',
-    ...
-}
-```
-or 
-```
-client_scripts {
-    "@nb-loop/nb-loop.lua",
-    "@nb-scaleform/nb-scaleform.lua",
-    ...
-}
-dependencies {
-    "nb-loop",
-    'nb-scaleform',
-    ...
-}
-```
-
 ## with wrapper
 ```
 CreateThread(function()
@@ -116,6 +91,31 @@ handle:Draw3DPedTransparent(ped,offsetx,offsety,offsetz) -- draw a scaleform by 
 handle:Draw3DPedDuration(duration,ped,offsetx,offsety,offsetz) -- draw a scaleform by the ped, you could make floating hud something easily...
 handle:Draw3DPedTransparentDuration(duration,ped,offsetx,offsety,offsetz) -- draw a scaleform by the ped, you could make floating hud something easily...
 
+```
+
+## fxmainfest.lua
+```
+client_scripts {
+    "@nb-scaleform/nb-scaleform.lua",
+    ...
+}
+dependencies {
+    'nb-scaleform',
+    ...
+}
+```
+or 
+```
+client_scripts {
+    "@nb-loop/nb-loop.lua",
+    "@nb-scaleform/nb-scaleform.lua",
+    ...
+}
+dependencies {
+    "nb-loop",
+    'nb-scaleform',
+    ...
+}
 ```
 
 
