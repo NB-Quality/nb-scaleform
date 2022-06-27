@@ -5,7 +5,7 @@ Lua extended Scaleform Wrapper
 ```
 CreateThread(function()
     local sf = Scaleform("mp_big_message_freemode")
-    sf("SHOW_SHARD_WASTED_MP_MESSAGE", "SOME TEXT", "SOME MORE TEXT", 5)
+    sf("SHOW_SHARD_WASTED_MP_MESSAGE", "SOME TEXT AND LABEL:", {"ESDOLLA",123456}, 5)
     sf:Draw()
 end)
 ```
