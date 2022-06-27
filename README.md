@@ -1,5 +1,5 @@
 # nb-scaleform
-Lua extended Scaleform Wrapper
+Lua extended Scaleform Wrapper. Can use extended functions if you using with [nb-loop](https://github.com/negbook/nb-loop) or just copy it into there as init
 
 ## with wrapper
 ```
@@ -70,6 +70,12 @@ end)
 
 ## more functions 
 ```
+handle:DrawThisFrame()
+handle:Draw2DThisFrame(x,y,width,height)
+handle:Draw2DPixelThisFrame(x,y,width,height)
+handle:Draw3DThisFrame(x, y, z, rx, ry, rz, scalex, scaley, scalez)
+handle:Draw3DTransparentThisFrame(x, y, z, rx, ry, rz, scalex, scaley, scalez)
+--with nb-loop lib 👇
 handle:PepareDrawInit(initfn,endfn) -- you can put SetScriptGfxDrawOrder or something like that and endfn with ResetScriptGfxAlign
 handle:Draw()
 handle:DrawDuration(duration,releasecb)
@@ -84,10 +90,7 @@ handle:Draw3DPed(ped,offsetx,offsety,offsetz) -- draw a scaleform by the ped, yo
 handle:Draw3DPedTransparent(ped,offsetx,offsety,offsetz) -- draw a scaleform by the ped, you could make floating hud something easily...
 handle:Draw3DPedDuration(duration,ped,offsetx,offsety,offsetz) -- draw a scaleform by the ped, you could make floating hud something easily...
 handle:Draw3DPedTransparentDuration(duration,ped,offsetx,offsety,offsetz) -- draw a scaleform by the ped, you could make floating hud something easily...
-handle:DrawThisFrame()
-handle:Draw2DThisFrame(x,y,width,height)
-handle:Draw2DPixelThisFrame(x,y,width,height)
-handle:Draw3DThisFrame(x, y, z, rx, ry, rz, scalex, scaley, scalez)
-handle:Draw3DTransparentThisFrame(x, y, z, rx, ry, rz, scalex, scaley, scalez)
 
 ```
+
+
