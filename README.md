@@ -20,7 +20,7 @@ client_scripts {
     ...
 }
 dependencies {
-    "@nb-loop/nb-loop.lua",
+    "nb-loop",
     'nb-scaleform',
     ...
 }
