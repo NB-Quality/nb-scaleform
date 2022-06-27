@@ -1,5 +1,6 @@
+
 # nb-scaleform
-Lua extended Scaleform Wrapper. Can use extended functions if you using with [nb-loop](https://github.com/negbook/nb-loop) or just copy it into there as init
+Lua extended Scaleform Wrapper. Can use extended functions if you using with [nb-loop](https://github.com/negbook/nb-loop) or just copy it into here before nb-scaleform.lua
 
 ## with wrapper
 ```
