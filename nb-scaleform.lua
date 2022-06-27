@@ -239,10 +239,44 @@ if PepareLoop then
 
             end ,function()
                 self:Close()
+               
             end)
+            
         end 
     end
-
+    function scaleform:Draw3DPedDuration(duration,ped,offsetx,offsety,offsetz)
+        if not self.loop then 
+            self.loop = PepareLoop(0)
+            
+            local handle = self.handle
+            local offset = offsety == nil and (offsetx or vector3(0.0,0.0,0.0)) or vector3(offsetx,offsety,offsetz)
+            
+            self.loop(function()
+                local temploop = self.loop
+                    if not temploop then return temploop:delete() end 
+                local entity = ped
+                local model = GetEntityModel(entity)
+                local s1,s2 = GetModelDimensions(model)
+                local sizeVector = s2-s1
+                local inveh = IsPedInAnyVehicle(entity) 
+                local coords = inveh and GetOffsetFromEntityInWorldCoords(entity,offset.x,offset.y,offset.z+sizeVector.z/2) or GetOffsetFromEntityInWorldCoords(entity,offset.x,offset.y,offset.z+sizeVector.y/2)
+                local x,y,z = table.unpack(coords)
+                local rot = GetEntityRotation(entity,2)
+                local rx,ry,rz = table.unpack(rot)
+                local scale = vector3(1.0,1.0,1.0)
+                local scalex, scaley, scalez = table.unpack(scale)
+                SetGameplayCamRelativePitch(0, 0.1);
+                SetGameplayCamRelativeHeading(0);
+                DrawScaleformMovie_3dNonAdditive(handle, x, y, z, rx, inveh and -ry or ry, inveh and rz or -rz, 2.0, 2.0, 1.0, scalex, scaley, scalez, 2)
+                if releasecb then releasecb() end
+            end ,function()
+                self:Close()
+            end)
+            self.loop:release(duration)
+        else 
+            self.loop:release(duration)
+        end 
+    end
     function scaleform:Draw3DPedTransparent(ped,offsetx,offsety,offsetz)
         if not self.loop then 
             self.loop = PepareLoop(0)
@@ -269,6 +303,37 @@ if PepareLoop then
             end ,function()
                 self:Close()
             end)
+        end 
+    end
+    function scaleform:Draw3DPedTransparentDuration(duration,ped,offsetx,offsety,offsetz)
+        if not self.loop then 
+            self.loop = PepareLoop(0)
+            
+            local handle = self.handle
+            local offset = offsety == nil and (offsetx or vector3(0.0,0.0,0.0)) or vector3(offsetx,offsety,offsetz)
+            self.loop(function()
+                local temploop = self.loop
+                    if not temploop then return temploop:delete() end 
+                local entity = ped
+                local model = GetEntityModel(entity)
+                local s1,s2 = GetModelDimensions(model)
+                local sizeVector = s2-s1
+                local inveh = IsPedInAnyVehicle(entity) 
+                local coords = inveh and GetOffsetFromEntityInWorldCoords(entity,offset.x,offset.y,offset.z+sizeVector.z/2) or GetOffsetFromEntityInWorldCoords(entity,offset.x,offset.y,offset.z+sizeVector.y/2)
+                local x,y,z = table.unpack(coords)
+                local rot = GetEntityRotation(entity,2)
+                local rx,ry,rz = table.unpack(rot)
+                local scale = vector3(1.0,1.0,1.0)
+                local scalex, scaley, scalez = table.unpack(scale)
+                SetGameplayCamRelativePitch(0, 0.1);
+                SetGameplayCamRelativeHeading(0);
+                DrawScaleformMovie_3d(handle, x, y, z, rx, inveh and -ry or ry, rz, 2.0, 2.0, 1.0, scalex, -scaley, scalez, 2)
+            end ,function()
+                self:Close()
+            end)
+            self.loop:release(duration)
+        else 
+            self.loop:release(duration)
         end 
     end
 
