@@ -9,7 +9,7 @@ CreateThread(function()
     sf:Draw()
 end)
 ```
-
+```
 CreateThread(function()
     local sfhud = Scaleform(21)
     sfhud("SET_PLAYER_CHIPS",0)
