@@ -15,7 +15,11 @@ scaleform.__index = scaleform
 scaleform.__tostring = function(self) return self.handle end 
 scaleform.__call = function(t,...)
 	local tb = {...}
-	PushScaleformMovieFunction(t.handle,tb[1])
+    if t.ishud then 
+        BeginScaleformScriptHudMovieMethod(t.handle,tb[1])
+    else 
+        BeginScaleformMovieMethod(t.handle,tb[1])
+    end 
 	for i=2,#tb do
         local v = tb[i]
 		if type(v) == "number" then 
@@ -52,15 +56,22 @@ scaleform.__call = function(t,...)
             EndTextCommandScaleformString()
 		end
 	end 
-	PopScaleformMovieFunctionVoid()
+	EndScaleformMovieMethod()
 end 
 
 Scaleform.Request = function(name)
+    local ishud = type(name) == "number"
     local name = name 
-    local handle = RequestScaleformMovie(name)
+    local handle = ishud and RequestScaleformScriptHudMovie(name) or RequestScaleformMovie(name)
     local timer = GetGameTimer() 
-    while not HasScaleformMovieLoaded(handle) and math.abs(GetTimeDifference(GetGameTimer(), timer)) < 5000 do 
-        Wait(50)
+    if ishud then 
+        while not HasScaleformScriptHudMovieLoaded(handle) and math.abs(GetTimeDifference(GetGameTimer(), timer)) < 5000 do 
+            Wait(50)
+        end 
+    else 
+        while not HasScaleformMovieLoaded(handle) and math.abs(GetTimeDifference(GetGameTimer(), timer)) < 5000 do 
+            Wait(50)
+        end 
     end 
     local self;self = {
         name = name,
@@ -71,7 +82,8 @@ Scaleform.Request = function(name)
         Draw2DPixelThisFrame = function(x,y,width,height) return DrawScaleformMovie(handle, x/1280, y/720, width, height, 255, 255, 255, 255) end ,
         Draw3DThisFrame = function(x, y, z, rx, ry, rz, scalex, scaley, scalez) return DrawScaleformMovie_3dNonAdditive(handle, x, y, z, rx, ry, rz, 2.0, 2.0, 1.0, scalex, scaley, scalez, 2) end ,
         Draw3DTransparentThisFrame = function(x, y, z, rx, ry, rz, scalex, scaley, scalez) return DrawScaleformMovie_3dNonAdditive(handle, x, y, z, rx, ry, rz, 2.0, 2.0, 1.0, scalex, scaley, scalez, 2) end ,
-        loop = nil
+        loop = nil,
+        ishud = ishud
     }
     return setmetatable(self,scaleform)
 end 
@@ -79,7 +91,11 @@ setmetatable(Scaleform,{__call=function(scaleform,name,drawinit,drawend) return 
 
 
 function scaleform:Close(cb)
-	SetScaleformMovieAsNoLongerNeeded(self.handle)
+    if self.ishud then 
+        RemoveScaleformScriptHudMovie(self.handle)
+    else 
+        SetScaleformMovieAsNoLongerNeeded(self.handle)
+    end 
 	self.unvalid = true 
     if self.loop then 
         self.loop:delete() 
