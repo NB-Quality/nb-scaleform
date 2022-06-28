@@ -79,19 +79,14 @@ handle:Draw3DTransparentThisFrame(x, y, z, rx, ry, rz, scalex, scaley, scalez)
 --with nb-loop lib 👇
 handle:PepareDrawInit(initfn,endfn) -- you can put SetScriptGfxDrawOrder or something like that and endfn with ResetScriptGfxAlign
 handle:Draw()
-handle:DrawDuration(duration,releasecb)
 handle:Draw2D(x,y,width,height)
-handle:Draw2DDuration(duration,x,y,width,height,releasecb)
 handle:Draw2DPixel(x,y,width,height) 
 handle:Draw3D(x, y, z, rx, ry, rz, scalex, scaley, scalez)
-handle:Draw3DDuration(duration,x, y, z, rx, ry, rz, scalex, scaley, scalez, releasecb)
 handle:Draw3DTransparent(x, y, z, rx, ry, rz, scalex, scaley, scalez)
-handle:Draw3DTransparentDuration(duration, x, y, z, rx, ry, rz, scalex, scaley, scalez, releasecb)
 handle:Draw3DPed(ped,offsetx,offsety,offsetz) -- draw a scaleform by the ped, you could make floating hud something easily...
 handle:Draw3DPedTransparent(ped,offsetx,offsety,offsetz) -- draw a scaleform by the ped, you could make floating hud something easily...
-handle:Draw3DPedDuration(duration,ped,offsetx,offsety,offsetz) -- draw a scaleform by the ped, you could make floating hud something easily...
-handle:Draw3DPedTransparentDuration(duration,ped,offsetx,offsety,offsetz) -- draw a scaleform by the ped, you could make floating hud something easily...
-
+handle:Release(afterduration,releasecb) -- or :Close :Kill :Destory if duration is nil,will destory immediately, call it second time will refresh the release timer
+handle:IsAlive()
 ```
 
 ## fxmainfest.lua

@@ -92,7 +92,7 @@ end
 setmetatable(Scaleform,{__call=function(scaleform,name,drawinit,drawend) return scaleform.Request(name,drawinit,drawend) end}) 
 
 
-function scaleform:Close(duration,cb)
+function scaleform:Release(duration,cb)
     local cb = type(duration) ~= "number" and duration or cb 
     local duration = type(duration) == "number" and duration or nil
     if not duration then 
@@ -122,9 +122,9 @@ function scaleform:Close(duration,cb)
     end 
 end
 
-scaleform.Destory = scaleform.Close 
-scaleform.Release = scaleform.Close 
-scaleform.Kill = scaleform.Close 
+scaleform.Destory = scaleform.Release 
+scaleform.Close = scaleform.Release 
+scaleform.Kill = scaleform.Release 
 
 function scaleform:IsAlive()
 	return not self.unvalid
@@ -137,19 +137,22 @@ if PepareLoop then
        self.drawend = drawend or ResetScriptGfxAlign
     end 
 
-    local DrawMain = function(self,drawer,...)
+    local DrawMain = function(self,drawer,params)
         if not self.loop then 
             self.loop = PepareLoop(0)
             local handle = self.handle
             local drawinit = self.drawinit
             local drawend = self.drawend
-            local opts = {...}
+            local params = params
             local unpack = table.unpack
+            local drawer = drawer 
             if not drawinit then 
                 self.loop(function()
                     local temploop = self.loop
                     if not temploop then return temploop:delete() end 
-                    drawer(handle,unpack(opts))
+                    params(function(...)
+                        drawer(handle,...)
+                    end)
                 end,function()
                     self:Close()
                 end)
@@ -158,66 +161,28 @@ if PepareLoop then
                     local temploop = self.loop
                     if not temploop then return temploop:delete() end 
                     if drawinit() then 
-                        drawer(handle,unpack(opts))
+                        params(function(...)
+                            drawer(handle,...)
+                        end)
                     end 
                     drawend()
                 end,function()
                     self:Close()
                 end)
             end 
-        end 
-    end 
-
-    local DrawMainDuration = function(self,drawer,duration,releasecb,...)
-        if not self.loop then 
-            self.loop = PepareLoop(0)
-            
-            local handle = self.handle
-            local drawinit = self.drawinit
-            local drawend = self.drawend
-            local opts = {...}
-            local unpack = table.unpack
-            if not drawinit then 
-                self.loop(function()
-                    local temploop = self.loop
-                    if not temploop then return temploop:delete() end 
-                    drawer(handle,unpack(opts))
-                end,function()
-                    self:Close()
-                end)
-            else 
-                self.loop(function()
-                    local temploop = self.loop
-                    if not temploop then return temploop:delete() end 
-                    if drawinit() then 
-                        drawer(handle,unpack(opts))
-                    end 
-                    drawend()
-                end,function()
-                    self:Close()
-                    if releasecb then releasecb() end
-                end)
-            end 
-            self.loop:release(duration)
-        else 
-            self.loop:release(duration)
         end 
     end 
 
     function scaleform:Draw()
-        return DrawMain(self,DrawScaleformMovieFullscreen,255,255,255,255,0)
-    end 
-
-    function scaleform:DrawDuration(duration,releasecb)
-        return DrawMainDuration(self,DrawScaleformMovieFullscreen,duration,releasecb,255,255,255,255,0)
+        return DrawMain(self,DrawScaleformMovieFullscreen,function(params)
+            params(255,255,255,255,0)
+        end)
     end 
 
     function scaleform:Draw2D(x,y,width,height)
-        return DrawMain(self,DrawScaleformMovie,x, y, width, height, 255, 255, 255, 255)
-    end 
-
-    function scaleform:Draw2DDuration(duration,x,y,width,height,releasecb)
-        return DrawMainDuration(self,DrawScaleformMovie,duration,releasecb,x, y, width, height, 255, 255, 255, 255)
+        return DrawMain(self,DrawScaleformMovie,function(params)
+            params(x, y, width, height, 255, 255, 255, 255)
+        end)
     end 
 
     function scaleform:Draw2DPixel(x,y,width,height)
@@ -225,19 +190,15 @@ if PepareLoop then
     end 
 
     function scaleform:Draw3D(x, y, z, rx, ry, rz, scalex, scaley, scalez)
-        return DrawMain(self,DrawScaleformMovie_3dNonAdditive, x, y, z, rx, ry, rz, 2.0, 2.0, 1.0, scalex, scaley, scalez, 2)
-    end
-
-    function scaleform:Draw3DDuration(duration,x, y, z, rx, ry, rz, scalex, scaley, scalez, releasecb)
-        return DrawMainDuration(self,DrawScaleformMovie_3dNonAdditive, duration, releasecb, x, y, z, rx, ry, rz, 2.0, 2.0, 1.0, scalex, scaley, scalez, 2)
+        return DrawMain(self,DrawScaleformMovie_3dNonAdditive,function(params)
+            params(x, y, z, rx, ry, rz, 2.0, 2.0, 1.0, scalex, scaley, scalez, 2)
+        end)
     end
 
     function scaleform:Draw3DTransparent(x, y, z, rx, ry, rz, scalex, scaley, scalez)
-        return DrawMain(self,DrawScaleformMovie_3d, x, y, z, rx, ry, rz, 2.0, 2.0, 1.0, scalex, scaley, scalez, 2)
-    end
-
-    function scaleform:Draw3DTransparentDuration(duration, x, y, z, rx, ry, rz, scalex, scaley, scalez, releasecb)
-        return DrawMainDuration(self,DrawScaleformMovie_3d, duration, releasecb, x, y, z, rx, ry, rz, 2.0, 2.0, 1.0, scalex, scaley, scalez, 2)
+        return DrawMain(self,DrawScaleformMovie_3d,function(params)
+            params(x, y, z, rx, ry, rz, 2.0, 2.0, 1.0, scalex, scaley, scalez, 2)
+        end)
     end
 
     local function GetPlayerPedOrVehicle(player)
@@ -278,39 +239,7 @@ if PepareLoop then
             
         end 
     end
-    function scaleform:Draw3DPedDuration(duration,ped,offsetx,offsety,offsetz)
-        if not self.loop then 
-            self.loop = PepareLoop(0)
-            
-            local handle = self.handle
-            local offset = offsety == nil and (offsetx or vector3(0.0,0.0,0.0)) or vector3(offsetx,offsety,offsetz)
-            
-            self.loop(function()
-                local temploop = self.loop
-                    if not temploop then return temploop:delete() end 
-                local entity = ped
-                local model = GetEntityModel(entity)
-                local s1,s2 = GetModelDimensions(model)
-                local sizeVector = s2-s1
-                local inveh = IsPedInAnyVehicle(entity) 
-                local coords = inveh and GetOffsetFromEntityInWorldCoords(entity,offset.x,offset.y,offset.z+sizeVector.z/2) or GetOffsetFromEntityInWorldCoords(entity,offset.x,offset.y,offset.z+sizeVector.y/2)
-                local x,y,z = table.unpack(coords)
-                local rot = GetEntityRotation(entity,2)
-                local rx,ry,rz = table.unpack(rot)
-                local scale = vector3(1.0,1.0,1.0)
-                local scalex, scaley, scalez = table.unpack(scale)
-                SetGameplayCamRelativePitch(0, 0.1);
-                SetGameplayCamRelativeHeading(0);
-                DrawScaleformMovie_3dNonAdditive(handle, x, y, z, rx, inveh and -ry or ry, inveh and rz or -rz, 2.0, 2.0, 1.0, scalex, scaley, scalez, 2)
-                if releasecb then releasecb() end
-            end ,function()
-                self:Close()
-            end)
-            self.loop:release(duration)
-        else 
-            self.loop:release(duration)
-        end 
-    end
+
     function scaleform:Draw3DPedTransparent(ped,offsetx,offsety,offsetz)
         if not self.loop then 
             self.loop = PepareLoop(0)
@@ -339,36 +268,6 @@ if PepareLoop then
             end)
         end 
     end
-    function scaleform:Draw3DPedTransparentDuration(duration,ped,offsetx,offsety,offsetz)
-        if not self.loop then 
-            self.loop = PepareLoop(0)
-            
-            local handle = self.handle
-            local offset = offsety == nil and (offsetx or vector3(0.0,0.0,0.0)) or vector3(offsetx,offsety,offsetz)
-            self.loop(function()
-                local temploop = self.loop
-                    if not temploop then return temploop:delete() end 
-                local entity = ped
-                local model = GetEntityModel(entity)
-                local s1,s2 = GetModelDimensions(model)
-                local sizeVector = s2-s1
-                local inveh = IsPedInAnyVehicle(entity) 
-                local coords = inveh and GetOffsetFromEntityInWorldCoords(entity,offset.x,offset.y,offset.z+sizeVector.z/2) or GetOffsetFromEntityInWorldCoords(entity,offset.x,offset.y,offset.z+sizeVector.y/2)
-                local x,y,z = table.unpack(coords)
-                local rot = GetEntityRotation(entity,2)
-                local rx,ry,rz = table.unpack(rot)
-                local scale = vector3(1.0,1.0,1.0)
-                local scalex, scaley, scalez = table.unpack(scale)
-                SetGameplayCamRelativePitch(0, 0.1);
-                SetGameplayCamRelativeHeading(0);
-                DrawScaleformMovie_3d(handle, x, y, z, rx, inveh and -ry or ry, rz, 2.0, 2.0, 1.0, scalex, -scaley, scalez, 2)
-            end ,function()
-                self:Close()
-            end)
-            self.loop:release(duration)
-        else 
-            self.loop:release(duration)
-        end 
-    end
+
 
 end 
