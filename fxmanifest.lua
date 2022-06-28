@@ -6,6 +6,7 @@ description ''
 repository ''
 
 client_scripts {
+    '@nb-loop/nb-loop.lua',
     'nb-scaleform.lua',
     'example.lua'
 }

@@ -10,146 +10,89 @@ end
 
 Scaleform = {}
 
-local scaleform = {}
-scaleform.__index = scaleform
-scaleform.__tostring = function(self) return self.handle end 
-scaleform.__call = function(t,...)
-	local tb = {...}
-    if t.ishud then 
-        BeginScaleformScriptHudMovieMethod(t.name,tb[1])
-    else 
-        BeginScaleformMovieMethod(t.handle,tb[1])
-    end 
-	for i=2,#tb do
-        local v = tb[i]
-		if type(v) == "number" then 
-			if math.type(v) == "integer" then
-				ScaleformMovieMethodAddParamInt(v)
-			else
-				ScaleformMovieMethodAddParamFloat(v)
-			end
-		elseif type(v) == "string" then 
-            ScaleformMovieMethodAddParamTextureNameString(v) 
-		elseif type(v) == "boolean" then ScaleformMovieMethodAddParamBool(v)
-        elseif type(v) == "table" then 
-            BeginTextCommandScaleformString(v[1])
-            for k=2,#v do 
-                local c = v[k]
-                if string.sub(c, 1, string.len("label:")) == "label:" then 
-                    local c = string.sub(c, string.len("label:")+1, string.len(c))
-                    AddTextComponentSubstringTextLabel(c)
-                elseif string.sub(c, 1, string.len("hashlabel:")) == "hashlabel:" then 
-                    local c = string.sub(c, string.len("hashlabel:")+1, string.len(c))
-                    AddTextComponentSubstringTextLabelHashKey(tonumber(c))
-                else 
-                    if type(c) == "number" then 
-                        if string.find(GetStreetNameFromHashKey(GetHashKey(v[1])),"~a~") then 
-                            AddTextComponentFormattedInteger(c,true)
-                        else 
-                            AddTextComponentInteger(c)
-                        end 
-                    else 
-                        ScaleformMovieMethodAddParamTextureNameString(c) 
-                    end
-                end 
-            end 
-            EndTextCommandScaleformString()
-		end
-	end 
-	EndScaleformMovieMethod()
-end 
-
 Scaleform.Request = function(name)
     local ishud = type(name) == "number"
-  
     local name = name 
     local handle = ishud and RequestScaleformScriptHudMovie(name) or RequestScaleformMovie(name)
     local timer = GetGameTimer() 
-    
-    if ishud then 
-        while not HasScaleformScriptHudMovieLoaded(name) and math.abs(GetTimeDifference(GetGameTimer(), timer)) < 5000 do 
-            Wait(50)
-        end 
-    else 
-        while not HasScaleformMovieLoaded(handle) and math.abs(GetTimeDifference(GetGameTimer(), timer)) < 5000 do 
-            Wait(50)
-        end 
-    end 
+    repeat 
+        local check = (ishud and HasScaleformScriptHudMovieLoaded(name) or HasScaleformMovieLoaded(handle))
+        Wait(50)
+    until check or math.abs(GetTimeDifference(GetGameTimer(), timer)) > 5000
+    local unvalid = false 
+    local drawinit = nil
+    local drawend = nil
+    local loop = nil 
     local self;self = {
-        name = name,
         handle = handle,
-        unvalid = false,
+        ishud = ishud,
         DrawThisFrame = function() return DrawScaleformMovieFullscreen(handle,255,255,255,255,0) end ,
         Draw2DThisFrame = function(x,y,width,height) return DrawScaleformMovie(handle, x, y, width, height, 255, 255, 255, 255) end ,
         Draw2DPixelThisFrame = function(x,y,width,height) return DrawScaleformMovie(handle, x/1280, y/720, width, height, 255, 255, 255, 255) end ,
         Draw3DThisFrame = function(x, y, z, rx, ry, rz, scalex, scaley, scalez) return DrawScaleformMovie_3dNonAdditive(handle, x, y, z, rx, ry, rz, 2.0, 2.0, 1.0, scalex, scaley, scalez, 2) end ,
         Draw3DTransparentThisFrame = function(x, y, z, rx, ry, rz, scalex, scaley, scalez) return DrawScaleformMovie_3dNonAdditive(handle, x, y, z, rx, ry, rz, 2.0, 2.0, 1.0, scalex, scaley, scalez, 2) end ,
-        loop = nil,
-        ishud = ishud
+        
     }
-    return setmetatable(self,scaleform)
-end 
-setmetatable(Scaleform,{__call=function(scaleform,name,drawinit,drawend) return scaleform.Request(name,drawinit,drawend) end}) 
-
-
-function scaleform:Release(duration,cb)
-    local cb = type(duration) ~= "number" and duration or cb 
-    local duration = type(duration) == "number" and duration or nil
-    if not duration then 
-        if self.ishud then 
-            RemoveScaleformScriptHudMovie(self.name)
-        else 
-            SetScaleformMovieAsNoLongerNeeded(self.handle)
-        end 
-        self.unvalid = true 
-        if self.loop then 
-            self.loop:delete() 
-            self.loop = nil
-        end 
-        if cb then cb() end 
-    elseif self.loop then  
-        local cb_local = function()
-            if self.ishud then 
-            RemoveScaleformScriptHudMovie(self.name)
-            else 
-                SetScaleformMovieAsNoLongerNeeded(self.handle)
+    function self:Release(duration,cb)
+        if PepareLoop then 
+            local cb = type(duration) ~= "number" and duration or cb 
+            local duration = type(duration) == "number" and duration or nil
+            if not duration then 
+                if ishud then 
+                    RemoveScaleformScriptHudMovie(name)
+                else 
+                    SetScaleformMovieAsNoLongerNeeded(handle)
+                end 
+                unvalid = true 
+                if loop then 
+                    loop:delete() 
+                    loop = nil
+                end 
+                if cb then cb() end 
+            elseif loop then  
+                local cb_local = function()
+                    if ishud then 
+                    RemoveScaleformScriptHudMovie(name)
+                    else 
+                        SetScaleformMovieAsNoLongerNeeded(handle)
+                    end 
+                    unvalid = true
+                    if cb then cb() end 
+                    loop = nil
+                end 
+                loop:delete(duration,cb_local) 
             end 
-            self.unvalid = true
+        else 
+            if ishud then 
+                RemoveScaleformScriptHudMovie(name)
+            else 
+                SetScaleformMovieAsNoLongerNeeded(handle)
+            end 
+            unvalid = true 
+            if loop then 
+                loop:delete() 
+                loop = nil
+            end 
             if cb then cb() end 
-            self.loop = nil
         end 
-        self.loop:delete(duration,cb_local) 
-    end 
-end
-
-scaleform.Destory = scaleform.Release 
-scaleform.Close = scaleform.Release 
-scaleform.Kill = scaleform.Release 
-
-function scaleform:IsAlive()
-	return not self.unvalid
-end
-
-if PepareLoop then 
-
-    function scaleform:PepareDrawInit(drawinit,drawend)
-       self.drawinit = drawinit
-       self.drawend = drawend or ResetScriptGfxAlign
-    end 
-
+    end
+    self.Destory = self.Release 
+    self.Close = self.Release 
+    self.Kill = self.Release 
+    function self:IsAlive()
+        return not unvalid
+    end
+    if PepareLoop then 
     local DrawMain = function(self,drawer,params)
-        if not self.loop then 
-            self.loop = PepareLoop(0)
-            local handle = self.handle
-            local drawinit = self.drawinit
-            local drawend = self.drawend
-            local params = params
+        if not loop then 
+            loop = PepareLoop(0)
+
             local unpack = table.unpack
             local drawer = drawer 
             if not drawinit then 
-                self.loop(function()
-                    local temploop = self.loop
-                    if not temploop then return temploop:delete() end 
+                loop(function(duration)
+                    local temploop = loop
+                    if not temploop then return duration("kill") end 
                     params(function(...)
                         drawer(handle,...)
                     end)
@@ -157,9 +100,9 @@ if PepareLoop then
                     self:Close()
                 end)
             else 
-                self.loop(function()
-                    local temploop = self.loop
-                    if not temploop then return temploop:delete() end 
+                loop(function(duration)
+                    local temploop = loop
+                    if not temploop then return duration("kill") end 
                     if drawinit() then 
                         params(function(...)
                             drawer(handle,...)
@@ -172,102 +115,91 @@ if PepareLoop then
             end 
         end 
     end 
-
-    function scaleform:Draw()
+    
+    function self:PepareDrawInit(_drawinit,_drawend)
+       drawinit = _drawinit
+       drawend = _drawend or ResetScriptGfxAlign
+    end 
+    function self:Draw()
         return DrawMain(self,DrawScaleformMovieFullscreen,function(params)
             params(255,255,255,255,0)
         end)
     end 
 
-    function scaleform:Draw2D(x,y,width,height)
+    function self:Draw2D(x,y,width,height)
         return DrawMain(self,DrawScaleformMovie,function(params)
             params(x, y, width, height, 255, 255, 255, 255)
         end)
     end 
 
-    function scaleform:Draw2DPixel(x,y,width,height)
-        return scaleform:Draw2D(self,x/1280,y/720,width,height)
+    function self:Draw2DPixel(x,y,width,height)
+        return self:Draw2D(x/1280,y/720,width,height)
     end 
 
-    function scaleform:Draw3D(x, y, z, rx, ry, rz, scalex, scaley, scalez)
+    function self:Draw3D(x, y, z, rx, ry, rz, scalex, scaley, scalez)
         return DrawMain(self,DrawScaleformMovie_3dNonAdditive,function(params)
             params(x, y, z, rx, ry, rz, 2.0, 2.0, 1.0, scalex, scaley, scalez, 2)
         end)
     end
 
-    function scaleform:Draw3DTransparent(x, y, z, rx, ry, rz, scalex, scaley, scalez)
+    function self:Draw3DTransparent(x, y, z, rx, ry, rz, scalex, scaley, scalez)
         return DrawMain(self,DrawScaleformMovie_3d,function(params)
             params(x, y, z, rx, ry, rz, 2.0, 2.0, 1.0, scalex, scaley, scalez, 2)
         end)
     end
-
-    local function GetPlayerPedOrVehicle(player)
-        local ped = (player == nil or player== -1) and PlayerPedId() or GetPlayerPed(player)
-        local veh = GetVehiclePedIsIn(ped)
-        return veh~=0 and veh or ped
-    end
-
-    function scaleform:Draw3DPed(ped,offsetx,offsety,offsetz)
-        if not self.loop then 
-            self.loop = PepareLoop(0)
-            
-            local handle = self.handle
-            local offset = offsety == nil and (offsetx or vector3(0.0,0.0,0.0)) or vector3(offsetx,offsety,offsetz)
-            
-            self.loop(function()
-                local temploop = self.loop
-                    if not temploop then return temploop:delete() end 
-                local entity = ped
-                local model = GetEntityModel(entity)
-                local s1,s2 = GetModelDimensions(model)
-                local sizeVector = s2-s1
-                local inveh = IsPedInAnyVehicle(entity) 
-                local coords = inveh and GetOffsetFromEntityInWorldCoords(entity,offset.x,offset.y,offset.z+sizeVector.z/2) or GetOffsetFromEntityInWorldCoords(entity,offset.x,offset.y,offset.z+sizeVector.y/2)
-                local x,y,z = table.unpack(coords)
-                local rot = GetEntityRotation(entity,2)
-                local rx,ry,rz = table.unpack(rot)
-                local scale = vector3(1.0,1.0,1.0)
-                local scalex, scaley, scalez = table.unpack(scale)
-                SetGameplayCamRelativePitch(0, 0.1);
-                SetGameplayCamRelativeHeading(0);
-                DrawScaleformMovie_3dNonAdditive(handle, x, y, z, rx, inveh and -ry or ry, inveh and rz or -rz, 2.0, 2.0, 1.0, scalex, scaley, scalez, 2)
-
-            end ,function()
-                self:Close()
-               
-            end)
-            
+    function self:__tostring() return handle end 
+    function self:__call(...)
+        local tb = {...}
+        if ishud then 
+            BeginScaleformScriptHudMovieMethod(name,tb[1])
+        else 
+            BeginScaleformMovieMethod(handle,tb[1])
         end 
-    end
-
-    function scaleform:Draw3DPedTransparent(ped,offsetx,offsety,offsetz)
-        if not self.loop then 
-            self.loop = PepareLoop(0)
-            
-            local handle = self.handle
-            local offset = offsety == nil and (offsetx or vector3(0.0,0.0,0.0)) or vector3(offsetx,offsety,offsetz)
-            self.loop(function()
-                local temploop = self.loop
-                    if not temploop then return temploop:delete() end 
-                local entity = ped
-                local model = GetEntityModel(entity)
-                local s1,s2 = GetModelDimensions(model)
-                local sizeVector = s2-s1
-                local inveh = IsPedInAnyVehicle(entity) 
-                local coords = inveh and GetOffsetFromEntityInWorldCoords(entity,offset.x,offset.y,offset.z+sizeVector.z/2) or GetOffsetFromEntityInWorldCoords(entity,offset.x,offset.y,offset.z+sizeVector.y/2)
-                local x,y,z = table.unpack(coords)
-                local rot = GetEntityRotation(entity,2)
-                local rx,ry,rz = table.unpack(rot)
-                local scale = vector3(1.0,1.0,1.0)
-                local scalex, scaley, scalez = table.unpack(scale)
-                SetGameplayCamRelativePitch(0, 0.1);
-                SetGameplayCamRelativeHeading(0);
-                DrawScaleformMovie_3d(handle, x, y, z, rx, inveh and -ry or ry, rz, 2.0, 2.0, 1.0, scalex, -scaley, scalez, 2)
-            end ,function()
-                self:Close()
-            end)
+        for i=2,#tb do
+            local v = tb[i]
+            if type(v) == "number" then 
+                if math.type(v) == "integer" then
+                    ScaleformMovieMethodAddParamInt(v)
+                else
+                    ScaleformMovieMethodAddParamFloat(v)
+                end
+            elseif type(v) == "string" then 
+                ScaleformMovieMethodAddParamTextureNameString(v) 
+            elseif type(v) == "boolean" then ScaleformMovieMethodAddParamBool(v)
+            elseif type(v) == "table" then 
+                BeginTextCommandScaleformString(v[1])
+                for k=2,#v do 
+                    local c = v[k]
+                    if string.sub(c, 1, string.len("label:")) == "label:" then 
+                        local c = string.sub(c, string.len("label:")+1, string.len(c))
+                        AddTextComponentSubstringTextLabel(c)
+                    elseif string.sub(c, 1, string.len("hashlabel:")) == "hashlabel:" then 
+                        local c = string.sub(c, string.len("hashlabel:")+1, string.len(c))
+                        AddTextComponentSubstringTextLabelHashKey(tonumber(c))
+                    else 
+                        if type(c) == "number" then 
+                            if string.find(GetStreetNameFromHashKey(GetHashKey(v[1])),"~a~") then 
+                                AddTextComponentFormattedInteger(c,true)
+                            else 
+                                AddTextComponentInteger(c)
+                            end 
+                        else 
+                            ScaleformMovieMethodAddParamTextureNameString(c) 
+                        end
+                    end 
+                end 
+                EndTextCommandScaleformString()
+            end
         end 
-    end
-
-
+        EndScaleformMovieMethod()
+    end 
+    end 
+    return setmetatable(self,self)
 end 
+setmetatable(Scaleform,{__call=function(x,name,drawinit,drawend) return x.Request(name,drawinit,drawend) end}) 
+
+
+
+
+
+
