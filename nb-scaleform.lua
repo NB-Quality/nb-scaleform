@@ -87,32 +87,30 @@ Scaleform.Request = function(name)
         local DrawScaleformMovie = DrawScaleformMovie
         local DrawScaleformMovie_3dNonAdditive = DrawScaleformMovie_3dNonAdditive
         local DrawScaleformMovie_3d = DrawScaleformMovie_3d
-        local DrawMain = function(drawer,params)
-            if not loop then 
-                loop = PepareLoop(0)
-                local unpack = table.unpack
-                local drawer = drawer 
-                if not drawinit then 
-                    loop(function(duration)
-                        if not loop then return duration("kill") end 
-                        params(function(...)
-                            drawer(handle,...)
+        local SetCurrentDrawer = function(_drawer)
+            local drawer = function(...) _drawer(handle,...) end  
+            return function(cb)
+                if not loop then 
+                    loop = PepareLoop(0)
+                    local unpack = table.unpack
+                    if not drawinit then 
+                        loop(function(duration)
+                            if not loop then return duration("kill") end 
+                            cb(drawer)
+                        end,function()
+                            self:Close()
                         end)
-                    end,function()
-                        self:Close()
-                    end)
-                else 
-                    loop(function(duration)
-                        if not loop then return duration("kill") end 
-                        if drawinit() then 
-                            params(function(...)
-                                drawer(handle,...)
-                            end)
-                        end 
-                        drawend()
-                    end,function()
-                        self:Close()
-                    end)
+                    else 
+                        loop(function(duration)
+                            if not loop then return duration("kill") end 
+                            if drawinit() then 
+                                cb(drawer)
+                            end 
+                            drawend()
+                        end,function()
+                            self:Close()
+                        end)
+                    end 
                 end 
             end 
         end 
@@ -121,15 +119,18 @@ Scaleform.Request = function(name)
            drawinit = _drawinit
            drawend = _drawend or ResetScriptGfxAlign
         end 
+        
+        local Drawer = SetCurrentDrawer(DrawScaleformMovieFullscreen)
         function self:Draw()
-            return DrawMain(DrawScaleformMovieFullscreen,function(params)
-                params(255,255,255,255,0)
+            return Drawer(function(_)
+                _(255, 255, 255, 255,0)
             end)
         end 
 
+        local Drawer = SetCurrentDrawer(DrawScaleformMovie)
         function self:Draw2D(x,y,width,height)
-            return DrawMain(DrawScaleformMovie,function(params)
-                params(x, y, width, height, 255, 255, 255, 255)
+            return Drawer(function(_)
+                _(x, y, width, height, 255, 255, 255, 255)
             end)
         end 
 
@@ -137,15 +138,17 @@ Scaleform.Request = function(name)
             return self:Draw2D(x/1280,y/720,width,height)
         end 
 
+        local Drawer = SetCurrentDrawer(DrawScaleformMovie_3dNonAdditive)
         function self:Draw3D(x, y, z, rx, ry, rz, scalex, scaley, scalez)
-            return DrawMain(DrawScaleformMovie_3dNonAdditive,function(params)
-                params(x, y, z, rx, ry, rz, 2.0, 2.0, 1.0, scalex, scaley, scalez, 2)
+            return Drawer(function(_)
+                _(x, y, z, rx, ry, rz, 2.0, 2.0, 1.0, scalex, scaley, scalez, 2)
             end)
         end
 
+        local Drawer = SetCurrentDrawer(DrawScaleformMovie_3d)
         function self:Draw3DTransparent(x, y, z, rx, ry, rz, scalex, scaley, scalez)
-            return DrawMain(DrawScaleformMovie_3d,function(params)
-                params(x, y, z, rx, ry, rz, 2.0, 2.0, 1.0, scalex, scaley, scalez, 2)
+            return Drawer(function(_)
+                _(x, y, z, rx, ry, rz, 2.0, 2.0, 1.0, scalex, scaley, scalez, 2)
             end)
         end
         function self:__tostring() return handle end 
