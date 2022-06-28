@@ -5,7 +5,8 @@ author 'negbook'
 description ''
 repository ''
 
-shared_scripts {
-    'nb-scaleform.lua'
+client_scripts {
+    'nb-scaleform.lua',
+    'example.lua'
 }
 

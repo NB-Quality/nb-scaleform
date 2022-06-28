@@ -92,18 +92,34 @@ end
 setmetatable(Scaleform,{__call=function(scaleform,name,drawinit,drawend) return scaleform.Request(name,drawinit,drawend) end}) 
 
 
-function scaleform:Close(cb)
-    if self.ishud then 
-        RemoveScaleformScriptHudMovie(self.name)
-    else 
-        SetScaleformMovieAsNoLongerNeeded(self.handle)
+function scaleform:Close(duration,cb)
+    local cb = type(duration) ~= "number" and duration or cb 
+    local duration = type(duration) == "number" and duration or nil
+    if not duration then 
+        if self.ishud then 
+            RemoveScaleformScriptHudMovie(self.name)
+        else 
+            SetScaleformMovieAsNoLongerNeeded(self.handle)
+        end 
+        self.unvalid = true 
+        if self.loop then 
+            self.loop:delete() 
+            self.loop = nil
+        end 
+        if cb then cb() end 
+    elseif self.loop then  
+        local cb_local = function()
+            if self.ishud then 
+            RemoveScaleformScriptHudMovie(self.name)
+            else 
+                SetScaleformMovieAsNoLongerNeeded(self.handle)
+            end 
+            self.unvalid = true
+            if cb then cb() end 
+            self.loop = nil
+        end 
+        self.loop:delete(duration,cb_local) 
     end 
-	self.unvalid = true 
-    if self.loop then 
-        self.loop:delete() 
-        self.loop = nil
-    end 
-    if cb then cb() end 
 end
 
 scaleform.Destory = scaleform.Close 
