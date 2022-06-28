@@ -83,116 +83,117 @@ Scaleform.Request = function(name)
         return not unvalid
     end
     if PepareLoop then 
-    local DrawMain = function(self,drawer,params)
-        if not loop then 
-            loop = PepareLoop(0)
-
-            local unpack = table.unpack
-            local drawer = drawer 
-            if not drawinit then 
-                loop(function(duration)
-                    local temploop = loop
-                    if not temploop then return duration("kill") end 
-                    params(function(...)
-                        drawer(handle,...)
-                    end)
-                end,function()
-                    self:Close()
-                end)
-            else 
-                loop(function(duration)
-                    local temploop = loop
-                    if not temploop then return duration("kill") end 
-                    if drawinit() then 
+        local DrawScaleformMovieFullscreen = DrawScaleformMovieFullscreen
+        local DrawScaleformMovie = DrawScaleformMovie
+        local DrawScaleformMovie_3dNonAdditive = DrawScaleformMovie_3dNonAdditive
+        local DrawScaleformMovie_3d = DrawScaleformMovie_3d
+        local DrawMain = function(drawer,params)
+            if not loop then 
+                loop = PepareLoop(0)
+                local unpack = table.unpack
+                local drawer = drawer 
+                if not drawinit then 
+                    loop(function(duration)
+                        if not loop then return duration("kill") end 
                         params(function(...)
                             drawer(handle,...)
                         end)
-                    end 
-                    drawend()
-                end,function()
-                    self:Close()
-                end)
+                    end,function()
+                        self:Close()
+                    end)
+                else 
+                    loop(function(duration)
+                        if not loop then return duration("kill") end 
+                        if drawinit() then 
+                            params(function(...)
+                                drawer(handle,...)
+                            end)
+                        end 
+                        drawend()
+                    end,function()
+                        self:Close()
+                    end)
+                end 
             end 
         end 
-    end 
-    
-    function self:PepareDrawInit(_drawinit,_drawend)
-       drawinit = _drawinit
-       drawend = _drawend or ResetScriptGfxAlign
-    end 
-    function self:Draw()
-        return DrawMain(self,DrawScaleformMovieFullscreen,function(params)
-            params(255,255,255,255,0)
-        end)
-    end 
-
-    function self:Draw2D(x,y,width,height)
-        return DrawMain(self,DrawScaleformMovie,function(params)
-            params(x, y, width, height, 255, 255, 255, 255)
-        end)
-    end 
-
-    function self:Draw2DPixel(x,y,width,height)
-        return self:Draw2D(x/1280,y/720,width,height)
-    end 
-
-    function self:Draw3D(x, y, z, rx, ry, rz, scalex, scaley, scalez)
-        return DrawMain(self,DrawScaleformMovie_3dNonAdditive,function(params)
-            params(x, y, z, rx, ry, rz, 2.0, 2.0, 1.0, scalex, scaley, scalez, 2)
-        end)
-    end
-
-    function self:Draw3DTransparent(x, y, z, rx, ry, rz, scalex, scaley, scalez)
-        return DrawMain(self,DrawScaleformMovie_3d,function(params)
-            params(x, y, z, rx, ry, rz, 2.0, 2.0, 1.0, scalex, scaley, scalez, 2)
-        end)
-    end
-    function self:__tostring() return handle end 
-    function self:__call(...)
-        local tb = {...}
-        if ishud then 
-            BeginScaleformScriptHudMovieMethod(name,tb[1])
-        else 
-            BeginScaleformMovieMethod(handle,tb[1])
+        
+        function self:PepareDrawInit(_drawinit,_drawend)
+           drawinit = _drawinit
+           drawend = _drawend or ResetScriptGfxAlign
         end 
-        for i=2,#tb do
-            local v = tb[i]
-            if type(v) == "number" then 
-                if math.type(v) == "integer" then
-                    ScaleformMovieMethodAddParamInt(v)
-                else
-                    ScaleformMovieMethodAddParamFloat(v)
-                end
-            elseif type(v) == "string" then 
-                ScaleformMovieMethodAddParamTextureNameString(v) 
-            elseif type(v) == "boolean" then ScaleformMovieMethodAddParamBool(v)
-            elseif type(v) == "table" then 
-                BeginTextCommandScaleformString(v[1])
-                for k=2,#v do 
-                    local c = v[k]
-                    if string.sub(c, 1, string.len("label:")) == "label:" then 
-                        local c = string.sub(c, string.len("label:")+1, string.len(c))
-                        AddTextComponentSubstringTextLabel(c)
-                    elseif string.sub(c, 1, string.len("hashlabel:")) == "hashlabel:" then 
-                        local c = string.sub(c, string.len("hashlabel:")+1, string.len(c))
-                        AddTextComponentSubstringTextLabelHashKey(tonumber(c))
-                    else 
-                        if type(c) == "number" then 
-                            if string.find(GetStreetNameFromHashKey(GetHashKey(v[1])),"~a~") then 
-                                AddTextComponentFormattedInteger(c,true)
-                            else 
-                                AddTextComponentInteger(c)
-                            end 
+        function self:Draw()
+            return DrawMain(DrawScaleformMovieFullscreen,function(params)
+                params(255,255,255,255,0)
+            end)
+        end 
+
+        function self:Draw2D(x,y,width,height)
+            return DrawMain(DrawScaleformMovie,function(params)
+                params(x, y, width, height, 255, 255, 255, 255)
+            end)
+        end 
+
+        function self:Draw2DPixel(x,y,width,height)
+            return self:Draw2D(x/1280,y/720,width,height)
+        end 
+
+        function self:Draw3D(x, y, z, rx, ry, rz, scalex, scaley, scalez)
+            return DrawMain(DrawScaleformMovie_3dNonAdditive,function(params)
+                params(x, y, z, rx, ry, rz, 2.0, 2.0, 1.0, scalex, scaley, scalez, 2)
+            end)
+        end
+
+        function self:Draw3DTransparent(x, y, z, rx, ry, rz, scalex, scaley, scalez)
+            return DrawMain(DrawScaleformMovie_3d,function(params)
+                params(x, y, z, rx, ry, rz, 2.0, 2.0, 1.0, scalex, scaley, scalez, 2)
+            end)
+        end
+        function self:__tostring() return handle end 
+        function self:__call(...)
+            local tb = {...}
+            if ishud then 
+                BeginScaleformScriptHudMovieMethod(name,tb[1])
+            else 
+                BeginScaleformMovieMethod(handle,tb[1])
+            end 
+            for i=2,#tb do
+                local v = tb[i]
+                if type(v) == "number" then 
+                    if math.type(v) == "integer" then
+                        ScaleformMovieMethodAddParamInt(v)
+                    else
+                        ScaleformMovieMethodAddParamFloat(v)
+                    end
+                elseif type(v) == "string" then 
+                    ScaleformMovieMethodAddParamTextureNameString(v) 
+                elseif type(v) == "boolean" then ScaleformMovieMethodAddParamBool(v)
+                elseif type(v) == "table" then 
+                    BeginTextCommandScaleformString(v[1])
+                    for k=2,#v do 
+                        local c = v[k]
+                        if string.sub(c, 1, string.len("label:")) == "label:" then 
+                            local c = string.sub(c, string.len("label:")+1, string.len(c))
+                            AddTextComponentSubstringTextLabel(c)
+                        elseif string.sub(c, 1, string.len("hashlabel:")) == "hashlabel:" then 
+                            local c = string.sub(c, string.len("hashlabel:")+1, string.len(c))
+                            AddTextComponentSubstringTextLabelHashKey(tonumber(c))
                         else 
-                            ScaleformMovieMethodAddParamTextureNameString(c) 
-                        end
+                            if type(c) == "number" then 
+                                if string.find(GetStreetNameFromHashKey(GetHashKey(v[1])),"~a~") then 
+                                    AddTextComponentFormattedInteger(c,true)
+                                else 
+                                    AddTextComponentInteger(c)
+                                end 
+                            else 
+                                ScaleformMovieMethodAddParamTextureNameString(c) 
+                            end
+                        end 
                     end 
-                end 
-                EndTextCommandScaleformString()
-            end
+                    EndTextCommandScaleformString()
+                end
+            end 
+            EndScaleformMovieMethod()
         end 
-        EndScaleformMovieMethod()
-    end 
     end 
     return setmetatable(self,self)
 end 
