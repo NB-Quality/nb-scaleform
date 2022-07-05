@@ -257,7 +257,7 @@ end
 local PepareLoop = PepareLoop
 if not PepareLoop then 
     local try = LoadResourceFile("nb-libs","shared/loop.lua") or LoadResourceFile("nb-loop","nb-loop.lua")
-    PepareLoop = PepareLoop or load(try.." return PepareLoop(...)") or _M_.PepareLoop
+    PepareLoop = PepareLoop or (try and load(try.." return PepareLoop(...)")) or _M_.PepareLoop
 end 
 
 
