@@ -11,3 +11,6 @@ client_scripts {
     'example.lua'
 }
 
+dependencies {
+	'nb-loop'
+}
