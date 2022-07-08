@@ -78,7 +78,7 @@ do
         end 
     end 
 
-    local PepareLoop = function(duration,init)
+    local LoopParty = function(duration,init)
         if not Loops[duration] then Loops[duration] = {} end 
         local self = {}
         self.duration = duration
@@ -185,15 +185,15 @@ do
         self.set = self.transfer 
         return self
     end 
-    _M_.PepareLoop = PepareLoop
+    _M_.LoopParty = LoopParty
 end 
 
 
 
-local PepareLoop = PepareLoop
-if not PepareLoop then 
+local LoopParty = LoopParty
+if not LoopParty then 
     local try = LoadResourceFile("nb-libs","shared/loop.lua") or LoadResourceFile("nb-loop","nb-loop.lua")
-    PepareLoop = PepareLoop or (try and load(try.." return PepareLoop(...)")) or _M_.PepareLoop
+    LoopParty = LoopParty or (try and load(try.." return LoopParty(...)")) or _M_.LoopParty
 end 
 
 
@@ -223,7 +223,7 @@ Scaleform.Request = function(name)
         
     }
     function self:Release(duration,cb)
-        if PepareLoop then 
+        if LoopParty then 
             local cb = type(duration) ~= "number" and duration or cb 
             local duration = type(duration) == "number" and duration or nil
             if not duration then 
@@ -271,7 +271,7 @@ Scaleform.Request = function(name)
     function self:IsAlive()
         return not unvalid
     end
-    if PepareLoop then 
+    if LoopParty then 
         local DrawScaleformMovieFullscreen = DrawScaleformMovieFullscreen
         local DrawScaleformMovie = DrawScaleformMovie
         local DrawScaleformMovie_3dNonAdditive = DrawScaleformMovie_3dNonAdditive
@@ -280,7 +280,7 @@ Scaleform.Request = function(name)
             local drawer = function(...) _drawer(handle,...) end  
             return function(cb)
                 if not loop then 
-                    loop = PepareLoop(0)
+                    loop = LoopParty(0)
                     local unpack = table.unpack
                     if not drawinit then 
                         loop(function(duration)
