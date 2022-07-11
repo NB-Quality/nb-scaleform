@@ -31,7 +31,7 @@ do
         newLoopThread(t, k)
     end})
 
-    local newLoopObject = function(t,selff,f)
+    local newLoopObject = function(t,selff,f,fbreak)
         local fns = t.fns
         local fnsbreak = t.fnsbreak
         local f = f 
@@ -41,10 +41,13 @@ do
                 local n = fns and #fns or 0
                 if n > 0 then 
                     for i=1,n do 
-                        if fns[i] == f then 
+                        if fns[i] and fns[i] == f then 
                             table.remove(fns,i)
-                            if fnsbreak and fnsbreak[i] then fnsbreak[i]() end
-                            table.remove(fnsbreak,i)
+                            if fnsbreak and fnsbreak[i] then 
+                                fnsbreak[i]() 
+                                table.remove(fnsbreak,i)
+                            end
+                            
                             if #fns == 0 then 
                                 table.remove(Loops[t.duration],i)
                             end
@@ -58,6 +61,8 @@ do
                 return t:transfer(val) 
             elseif act == "get" then 
                 return t.duration
+            elseif act == "self" then 
+                return t
             end 
         end
         local aliveDelay = nil 
@@ -91,7 +96,7 @@ do
                 local n = #fns
                 if init() then 
                     for i=1,n do 
-                        fns[i](ref)
+                        (fns[i] or e)(ref)
                     end 
                 end 
             end 
@@ -100,7 +105,7 @@ do
                 local fns = self.fns
                 local n = #fns
                 for i=1,n do 
-                    fns[i](ref)
+                    (fns[i] or e)(ref)
                 end 
             end 
         end 
@@ -109,7 +114,7 @@ do
                 local fbreak = ...
                 table.insert(t.fns, f)
                 if fbreak then table.insert(self.fnsbreak, fbreak) end
-                local obj = newLoopObject(self,selff,f)
+                local obj = newLoopObject(self,selff,f,fbreak)
                 table.insert(Loops[duration], obj)
                 self.obj = obj
                 return self
@@ -117,7 +122,7 @@ do
                 return self.obj(f,...)
             end 
         end,__tostring = function(t)
-            return "Loop("..t.duration.."), Total Thread: "..totalThread
+            return "Loop("..t.duration..","..#t.fns.."), Total Thread: "..totalThread
         end})
         self.found = function(self,f)
             for i,v in ipairs(Loops[self.duration]) do
@@ -193,8 +198,6 @@ do
 end 
 
 LoopParty = _M_.LoopParty
-
-
 
 Scaleform = {}
 

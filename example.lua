@@ -14,6 +14,6 @@ CreateThread(function()
  
     sfhud:Release(5000)
     sfhud2:Release(4000,function()
-        print('closed')
+        print('closed2')
     end)
 end)
